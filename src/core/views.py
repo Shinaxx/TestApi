@@ -1,12 +1,15 @@
-from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
-from rest_framework import serializers
+from django.views.generic import TemplateView
 
 # third party imports
+from rest_framework import mixins
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import generics
 
-from .serializers import PostSerailizer
+from .serializers import PostSerializer
 from .models import Post
 
 
@@ -17,14 +20,53 @@ class TestView(APIView):
     def get(self, request, *args, **kwargs):
         qs = Post.objects.all()
         post = qs.first()
-        # serializer = PostSerailizer(qs, many=True)
-        serializer = PostSerailizer(post)
-
-        return Response(data)
+        # serializer = PostSerializer(qs, many=True)
+        serializer = PostSerializer(post)
+        return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        serializer = PostSerailizer(data=request.data)
+        serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors)
+
+
+# def detail(generec):
+#     return HttpResponse("You're looking at question %s." % question_id)
+
+class NewsView(APIView):
+    def get(self, request, format=None):
+        """
+        Return a list of all users.
+
+        """
+        myresponse = Response(data={"hello": "gggg"})
+        return myresponse
+
+
+class PostView(
+        mixins.ListModelMixin,
+        mixins.CreateModelMixin,
+        generics.GenericAPIView):
+    serializer_class = PostSerializer
+    queryset = Post.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+
+class PostCreateView(mixins.ListModelMixin, generics.CreateAPIView):
+    serializer_class = PostSerializer
+    queryset = Post.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+
+class PostListCreateView(generics.ListCreateAPIView):
+    serializer_class = PostSerializer
+    queryset = Post.objects.all()
