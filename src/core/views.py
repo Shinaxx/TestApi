@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import render
 from rest_framework import serializers
 
@@ -11,10 +11,13 @@ from .models import Post
 
 
 class TestView(APIView):
+
+    permission_classes = (IsAuthenticated, )
+
     def get(self, request, *args, **kwargs):
         qs = Post.objects.all()
         post = qs.first()
-        #serializer = PostSerailizer(qs, many=True)
+        # serializer = PostSerailizer(qs, many=True)
         serializer = PostSerailizer(post)
 
         return Response(data)
